@@ -6,4 +6,8 @@ pub enum Error {
   GenerateKeyFailed,
   #[error("encrypt failed")]
   EncryptFailed,
+  #[error("decrypt failed")]
+  DecryptFailed,
+  #[error("invalid message length")]
+  InvalidMessageLength,
 }

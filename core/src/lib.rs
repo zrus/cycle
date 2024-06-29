@@ -69,3 +69,73 @@ pub fn encrypt(
   result.extend(in_out);
   Ok(result)
 }
+
+// Decrypt a message using the recipient's private key
+pub fn decrypt(
+  recipient_keypair: KeyPair,
+  ciphertext: impl AsRef<[u8]>,
+) -> Result<Vec<u8>> {
+  let pkey_len = recipient_keypair.public_key().len();
+  if ciphertext.as_ref().len() <= pkey_len + 12 {
+    return Err(Error::DecryptFailed);
+  }
+
+  let (ephemeral_public_key, rest) = ciphertext.as_ref().split_at(pkey_len);
+  let (nonce, encrypted_data) = rest.split_at(12);
+
+  // Perform key agreement
+  let shared_secret = agreement::agree_ephemeral(
+    recipient_keypair.private_key,
+    &agreement::UnparsedPublicKey::new(
+      &agreement::X25519,
+      ephemeral_public_key,
+    ),
+    |shared_key_material| shared_key_material.to_vec(),
+  )
+    .map_err(|_| Error::DecryptFailed)?;
+
+  // Derive decryption key using HKDF
+  let salt = hkdf::Salt::new(hkdf::HKDF_SHA256, &[]);
+  let prk = salt.extract(&shared_secret);
+  let mut aead_key = [0u8; 32];
+  prk
+    .expand(&[b"encryption"], &aead::CHACHA20_POLY1305)
+    .map_err(|_| Error::DecryptFailed)?
+    .fill(&mut aead_key)
+    .map_err(|_| Error::EncryptFailed)?;
+
+  // Decrypt the message
+  let key = aead::UnboundKey::new(&aead::CHACHA20_POLY1305, &aead_key)
+    .map_err(|_| Error::DecryptFailed)?;
+  let opening_key = aead::LessSafeKey::new(key);
+
+  let mut in_out = encrypted_data.to_vec();
+  let nonce = aead::Nonce::try_assume_unique_for_key(nonce)
+    .map_err(|_| Error::DecryptFailed)?;
+  let decrypted_data = opening_key
+    .open_in_place(nonce, aead::Aad::empty(), &mut in_out)
+    .map_err(|_| Error::DecryptFailed)?;
+
+  Ok(decrypted_data.to_vec())
+}
+
+#[test]
+fn test() -> Result<()> {
+  // Generate key pairs for Alice and Bob
+  let keypair = KeyPair::new()?;
+
+  // Alice encrypts a message for Bob
+  let message = "Hello! This is a secret message.";
+  println!("Original message: {:?}", String::from(message));
+
+  let encrypted = encrypt(keypair.public_key(), message)?;
+  println!("Encrypted: {:?}", String::from_utf8_lossy(&encrypted));
+
+  // Bob decrypts the message from Alice
+  let decrypted = decrypt(keypair, &encrypted)?;
+  let decrypted_message = String::from_utf8_lossy(&decrypted);
+  println!("Decrypted: {decrypted_message}");
+  assert_eq!(message, decrypted_message);
+
+  Ok(())
+}
