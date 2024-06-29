@@ -4,4 +4,6 @@ use thiserror::Error;
 pub enum Error {
   #[error("generate key failed")]
   GenerateKeyFailed,
+  #[error("encrypt failed")]
+  EncryptFailed,
 }
