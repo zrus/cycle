@@ -1,14 +1,7 @@
-pub fn add(left: usize, right: usize) -> usize {
-  left + right
-}
+mod error;
+mod keypair;
 
-#[cfg(test)]
-mod tests {
-  use super::*;
+pub use error::Error;
+pub use keypair::KeyPair;
 
-  #[test]
-  fn it_works() {
-    let result = add(2, 2);
-    assert_eq!(result, 4);
-  }
-}
+pub type Result<T, E = Error> = core::result::Result<T, E>;
