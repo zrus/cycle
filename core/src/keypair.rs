@@ -7,6 +7,9 @@ use crate::{Error, Result};
 
 const BIT_SIZE: usize = 32 * 8;
 
+/// Keypair
+///
+/// Based on RsaKeypair
 #[derive(Debug)]
 pub struct KeyPair {
   private_key: RsaPrivateKey,
@@ -14,6 +17,7 @@ pub struct KeyPair {
 }
 
 impl KeyPair {
+  /// Generate new key pair
   pub fn generate() -> Result<Self> {
     let mut rng = rand::thread_rng();
     let private_key = RsaPrivateKey::new(&mut rng, BIT_SIZE)
@@ -25,6 +29,7 @@ impl KeyPair {
     })
   }
 
+  /// Public key base64
   pub fn public_key_base64(&self) -> Result<String> {
     let Ok(doc) = self.public_key.to_pkcs1_der() else {
       return Err(Error::UnableToParseToPem);
@@ -32,6 +37,7 @@ impl KeyPair {
     Ok(general_purpose::STANDARD.encode(doc.as_ref()))
   }
 
+  /// Private key base64
   pub fn private_key_base64(&self) -> Result<String> {
     let Ok(doc) = self.private_key.to_pkcs1_der() else {
       return Err(Error::UnableToParseToPem);
@@ -39,6 +45,7 @@ impl KeyPair {
     Ok(general_purpose::STANDARD.encode(doc.as_bytes()))
   }
 
+  /// Public key in pem format
   pub fn public_key_pem(&self) -> Result<String> {
     self
       .public_key
@@ -46,6 +53,7 @@ impl KeyPair {
       .map_err(|_| Error::UnableToParseToPem)
   }
 
+  /// Private key in pem format
   pub fn private_key_pem(&self) -> Result<String> {
     self
       .private_key

@@ -12,6 +12,7 @@ pub use keypair::KeyPair;
 
 pub type Result<T, E = Error> = core::result::Result<T, E>;
 
+/// Encrypt message
 pub fn encrypt(
   public_key: impl AsRef<str>,
   message: impl AsRef<[u8]>,
@@ -24,6 +25,7 @@ pub fn encrypt(
   Ok(general_purpose::STANDARD.encode(encrypted))
 }
 
+/// Decrypt ciphertext
 pub fn decrypt(
   private_key: impl AsRef<str>,
   cipher: impl AsRef<[u8]>,
