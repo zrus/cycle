@@ -3,6 +3,9 @@ name = "core"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+doctest = false
+
 [dependencies]
 rsa = { version = "=0.9.6" }
 rand = { version = "=0.8.5" }
