@@ -2,12 +2,24 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum Error {
-  #[error("generate key failed")]
+  #[error("Generate key failed")]
   GenerateKeyFailed,
-  #[error("encrypt failed")]
+  #[error("Unable to parse to PEM")]
+  UnableToParseToPem,
+  #[error("Unable to read PEM")]
+  UnableToReadPem,
+  #[error("Unable to read der")]
+  UnableToReadDer,
+  #[error("Encrypt failed")]
   EncryptFailed,
-  #[error("decrypt failed")]
+  #[error("Decrypt failed")]
   DecryptFailed,
-  #[error("invalid message length")]
+  #[error("Invalid message length")]
   InvalidMessageLength,
+  #[error("Decode key failed")]
+  DecodeKeyFailed,
+  #[error("Unable to parse encrypted")]
+  UnableToParseEncrypted,
+  #[error("Unable to parse cipher text")]
+  UnableToParseCipher,
 }
