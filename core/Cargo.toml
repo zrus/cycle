@@ -1,8 +1,13 @@
 [package]
 name = "core"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 
+[lib]
+doctest = false
+
 [dependencies]
-ring = { version = "=0.17.8" }
+rsa = { version = "=0.9.6" }
+rand = { version = "=0.8.5" }
+base64 = { version = "=0.22.1" }
 thiserror = { version = "1.0" }
